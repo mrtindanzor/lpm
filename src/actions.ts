@@ -1,4 +1,4 @@
-import { watchBuild } from "./config/registry";
+import { watchBuild } from "../utils/registry";
 import copyPackages from "./runners/add";
 import initializeConfig from "./runners/init";
 import { buildRegistry } from "./runners/registry";

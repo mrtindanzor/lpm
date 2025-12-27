@@ -1,11 +1,12 @@
 import process from "node:process";
 import {
+  fileCopier,
   getAddPackages,
   getMissingArgs,
   getMissingArgsQuestions,
   promptForMissingArgs,
 } from "../../utils/addUtil";
-import { REQUIRED_ARGS, CLI_QUESTIONS } from "../../utils/constants";
+import { REQUIRED_ARGS, CLI_QUESTIONS } from "../../utils/static_constants";
 import type { CLI_OPTIONS } from "../../types/config";
 import tryCatch, { syncTryCatch } from "../../utils/lib";
 import { getConfigFile } from "../../utils/common";
@@ -14,7 +15,7 @@ export default async function copyPackages(args: Partial<CLI_OPTIONS>) {
   let options = args;
   let required = [...REQUIRED_ARGS];
 
-  const config = getConfigFile();
+  const config = await getConfigFile();
   if (config) required = required.filter((arg) => arg !== "--dest");
 
   const missing = getMissingArgs(args, required);
@@ -39,4 +40,5 @@ export default async function copyPackages(args: Partial<CLI_OPTIONS>) {
   if (getPackagesErr) return console.log(getPackagesErr);
 
   console.log(packages);
+  fileCopier(config);
 }

@@ -1,1 +1,49 @@
-{}
+{
+  "hooks": [
+    {
+      "name": "useAutoHide",
+      "deps": [
+        "react"
+      ],
+      "files": [
+        "\\hooks\\useAutoHide.ts"
+      ]
+    },
+    {
+      "name": "useDebounce",
+      "deps": [
+        "react"
+      ],
+      "files": [
+        "\\hooks\\useDebounce.ts"
+      ]
+    },
+    {
+      "name": "useIntersection",
+      "deps": [
+        "react"
+      ],
+      "files": [
+        "\\hooks\\useIntersection.ts"
+      ]
+    },
+    {
+      "name": "useDeviceWidth",
+      "deps": [
+        "react"
+      ],
+      "files": [
+        "\\hooks\\useDeviceWidth.ts"
+      ]
+    },
+    {
+      "name": "useScrollElement",
+      "deps": [
+        "react"
+      ],
+      "files": [
+        "\\hooks\\useScrollElement.ts"
+      ]
+    }
+  ]
+}

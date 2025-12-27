@@ -6,5 +6,4 @@ export type REGISTRY_PACKAGE_TYPE = {
   name: string;
   files: string[];
   deps?: string[];
-  type?: string;
 };

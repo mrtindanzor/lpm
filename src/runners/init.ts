@@ -1,8 +1,10 @@
 import type { CLI_OPTIONS } from "../../types/config";
-import { getConfigFile, writeFileToPath } from "../../utils/common";
+import { getConfigFile } from "../../utils/common";
+import { writeFileToPath } from "../../utils/utils";
 import { selectInitDestination } from "../../utils/initUtil";
-import { getConfig, CONFIG_NAME } from "../../utils/constants";
-import fs from "node:fs";
+import { getConfig } from "../../utils/constants";
+import { CONFIG_NAME } from "../../utils/static_constants";
+import fs from "node:fs/promises";
 
 export default async function initializeConfig(_: Partial<CLI_OPTIONS>) {
   const configExists = await getConfigFile();
@@ -18,7 +20,7 @@ export default async function initializeConfig(_: Partial<CLI_OPTIONS>) {
   const installDir = await selectInitDestination();
   const config = getConfig(installDir);
 
-  fs.mkdirSync(`${currentDir}${installDir}`, { recursive: true });
-  writeFileToPath(currentDir, `${CONFIG_NAME}.json`, config);
+  await fs.mkdir(`${currentDir}${installDir}`, { recursive: true });
+  await writeFileToPath(currentDir, `${CONFIG_NAME}.json`, config);
   console.log("Project initialized successfully.");
 }

@@ -1,6 +1,7 @@
 import { select, text } from "@clack/prompts";
 import { SELECT_PACKAGE_OPTIONS } from "./constants";
 import { RetryAsync } from "./common";
+import type { CONFIG_TYPE } from "../types/config";
 
 export const getMissingArgs = (
   allArgs: Record<string, unknown>,
@@ -112,4 +113,8 @@ export const promptForMissingArgs = async (
   }
 
   return args;
+};
+
+export const fileCopier = async (config: CONFIG_TYPE) => {
+  console.log(config);
 };

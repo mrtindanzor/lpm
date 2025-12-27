@@ -1,10 +1,17 @@
 import type { CLI_ACTIONS, CLI_OPTIONS, CONFIG_TYPE } from "../types/config";
-import { ACTIONS, CONFIG_NAME, PACKAGE_KEYS } from "./constants";
-import { syncTryCatch } from "./lib";
-import fs from "node:fs/promises";
-import tryCatch from "../main/utils/trycatch/trycatch";
-import type { RetryAsyncProps } from "../types/common";
+import {
+  CONFIG_NAME,
+  EXTRACT_IMPORT_REGEX_KEYS,
+  PACKAGE_KEYS,
+} from "./static_constants";
+import type {
+  EXTRACT_IMPORT_KEY_PROPS,
+  RetryAsyncProps,
+} from "../types/common";
 import type { REGISTRY_PACKAGE_TYPE } from "../types/registry";
+import { extractImportPattern } from "./regPatterns";
+import { ACTIONS } from "./constants";
+import { joinPaths, readAndParseFileToJson } from "./utils";
 
 const isAction = (value: unknown): value is CLI_ACTIONS => {
   return ACTIONS.includes(value as CLI_ACTIONS);
@@ -39,45 +46,23 @@ export const getArguments = (cliArgs: string[]) => {
   return [action as CLI_ACTIONS | null, data as Partial<CLI_OPTIONS>] as const;
 };
 
-export const writeFileToPath = async (
-  dir: string,
-  fileName: string,
-  file: string,
-) => {
-  const path = `${dir}/${fileName}`;
-
-  const [, mkdErr] = await tryCatch(fs.mkdir(dir, { recursive: true }));
-  if (mkdErr) console.log("Making dirs failed", mkdErr);
-
-  const [, wErr] = await tryCatch(fs.writeFile(path, file, "utf-8"));
-  if (wErr) console.log("Writing file failed", wErr);
-};
-
-export const readAndParseFileToJson = async <T>(path: string) => {
-  const [readFile] = await tryCatch(fs.readFile(path, { encoding: "utf-8" }));
-
-  const [file, error] = syncTryCatch<T>(() => {
-    return JSON.parse(readFile) as T;
-  });
-
-  if (error) console.log(error);
-
-  return file;
-};
-
-export const getConfigFile = async () => {
+export const getConfigFile = async (): Promise<null | CONFIG_TYPE> => {
   const __dir = process.cwd();
 
-  const tsPath = `${__dir}/${CONFIG_NAME}.json`;
-  const jsPath = `${__dir}/${CONFIG_NAME}.json`;
+  const configPath = joinPaths(__dir, `${CONFIG_NAME}.json`);
 
-  const [, notTsConfigExists] = await tryCatch(fs.access(tsPath));
-  if (!notTsConfigExists) return readAndParseFileToJson<CONFIG_TYPE>(tsPath);
+  const config = await readAndParseFileToJson<CONFIG_TYPE>(configPath);
 
-  const [, notJsConfigExists] = await tryCatch(fs.access(jsPath));
-  if (!notJsConfigExists) return readAndParseFileToJson<CONFIG_TYPE>(jsPath);
+  return config;
+};
 
-  return null;
+export const getPackageJson = async (): Promise<null | CONFIG_TYPE> => {
+  const __dir = process.cwd();
+
+  const configPath = joinPaths(__dir, `package.json`);
+
+  const config = await readAndParseFileToJson<CONFIG_TYPE>(configPath);
+  return config;
 };
 
 export const RetryAsync = async <T>({
@@ -97,3 +82,27 @@ export const RetryAsync = async <T>({
 
   throw error;
 };
+
+export function getDepsFromFile(file: string) {
+  const entries = file.matchAll(extractImportPattern).toArray();
+
+  const results = entries.map(extractRegGpNameAndIndices);
+
+  const regDeps = results
+    .map((res) => res.regDeps?.indices)
+    .filter((dep) => Array.isArray(dep));
+
+  return [regDeps, results] as const;
+}
+
+export function extractRegGpNameAndIndices(group: RegExpExecArray) {
+  return EXTRACT_IMPORT_REGEX_KEYS.map((key) => ({
+    [key]: {
+      name: group.groups?.[key],
+      indices: group.indices?.groups?.[key],
+    },
+  })).reduce((prev, curr) => ({
+    ...(prev || {}),
+    ...curr,
+  })) as EXTRACT_IMPORT_KEY_PROPS;
+}

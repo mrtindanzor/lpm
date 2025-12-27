@@ -1,5 +1,5 @@
 import type { CLI_OPTIONS } from "../../types/config";
-import { buildTypes } from "../config/registry";
+import { buildTypes } from "../../utils/registry";
 
 export async function buildRegistry(_: Partial<CLI_OPTIONS>) {
   await buildTypes();

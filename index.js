@@ -19,4 +19,5 @@ const child = spawn(tsxPath, [cliPath, ...args.slice(2)], {
 });
 
 child.on("exit", (code) => process.exit(code));
+
 child.on("error", console.error);
