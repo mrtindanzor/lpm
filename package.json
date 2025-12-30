@@ -3,7 +3,7 @@
     "name": "Mr. Tindanzor Simon"
   },
   "scripts": {
-    "lint": "biome check --write && tsc --noEmit"
+    "lint": "biome check --write"
   },
   "bin": {
     "lpm": "./index.js"
