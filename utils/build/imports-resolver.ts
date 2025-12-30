@@ -1,6 +1,6 @@
 import { Project } from "ts-morph";
-import { REGISTRY_DECORATOR } from "./static_constants";
-import { isTsJsFile } from "./utils";
+import { REGISTRY_DECORATOR } from "../static_constants";
+import { isTsJsFile } from "../utils";
 
 const project = new Project({
   compilerOptions: {

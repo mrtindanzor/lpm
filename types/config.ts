@@ -8,5 +8,4 @@ export type CLI_OPTIONS = {
 
 export type CONFIG_TYPE = {
   destination: string;
-  components: Record<string, unknown>;
 };

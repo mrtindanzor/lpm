@@ -28,3 +28,14 @@ export type Write_File_Props = {
   path?: string;
   file: string;
 };
+
+export type PackageJson = {
+  dependencies: Record<string, string>;
+  devDependencies: Record<string, string>;
+};
+
+export type tsConfigType = {
+  compilerOptions: {
+    paths: Record<string, string[]>;
+  };
+};

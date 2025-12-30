@@ -1,18 +1,18 @@
-import { getArguments } from "../utils/common";
-
-import process from "node:process";
-import { printLines } from "../utils/lib";
 import { REGISTRY_ACTIONS } from "./actions";
+import { printLines } from "../utils/lib";
+import { HELP } from "../utils/static_constants";
 
-const [action, args] = getArguments(process.argv);
-printLines();
+const action = process.argv[2];
 
-if (!action) {
-  console.error(" Attach a command to execute");
-}
+printLines(1);
+console.log("├ ", " Local Package Manager");
+printLines(2);
+
+if (!action) console.log(HELP);
 
 if (action) {
   const callback = REGISTRY_ACTIONS[action];
-  await callback(args);
+  await callback();
 }
+
 printLines(1);

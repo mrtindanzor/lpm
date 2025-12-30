@@ -1,26 +1,28 @@
-import type { CLI_OPTIONS } from "../../types/config";
-import { getConfigFile } from "../../utils/common";
-import { writeFileToPath } from "../../utils/utils";
-import { selectInitDestination } from "../../utils/initUtil";
-import { getConfig } from "../../utils/constants";
-import { CONFIG_NAME } from "../../utils/static_constants";
-import fs from "node:fs/promises";
+import { selectInitDestination } from "../../utils/init/initUtil";
+import {
+  createConfigFile,
+  getConfigFile,
+  updateTsConfigWithPath,
+} from "../../utils/common";
 
-export default async function initializeConfig(_: Partial<CLI_OPTIONS>) {
-  const configExists = await getConfigFile();
+export default async function initializeConfig(manual = false) {
+  //Retrieve config if exists
+  const configExists = !manual && (await getConfigFile());
 
-  if (configExists) {
-    console.log("Config file already exists!");
+  //If config exists return
+  if (configExists) return console.log(" Config file already exists!");
 
-    return;
-  }
+  //Prompt user for installation path
+  let insDir = await selectInitDestination();
 
-  const currentDir = process.cwd();
+  const replace = (word: string) => word.replaceAll(/(\\\\|\/\/|\\)/g, "/");
+  insDir = replace(`./${insDir}/*`);
+  insDir = replace(insDir);
 
-  const installDir = await selectInitDestination();
-  const config = getConfig(installDir);
+  //Update the ts config with the Registry Decoration in [tsconfig.json] compilierOptions.paths
+  await updateTsConfigWithPath(insDir);
 
-  await fs.mkdir(`${currentDir}${installDir}`, { recursive: true });
-  await writeFileToPath(currentDir, `${CONFIG_NAME}.json`, config);
-  console.log("Project initialized successfully.");
+  //Create lpm config file
+  await createConfigFile(insDir.replace("*", ""));
+  if (!manual) console.log(" Project initialized successfully.");
 }

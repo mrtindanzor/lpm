@@ -17,6 +17,7 @@
 
 import { REGISTRY_DECORATOR } from "./static_constants";
 
+const dirSepPatn = /(\\|\\\\|\/\/|\/)/;
 export const dfTsExpPatn = /(?<tsTypes>type\s+)/;
 export const ndTsExpPatn = /(?<tsTypes>type\s+\w(s*,))/;
 
@@ -47,9 +48,25 @@ export const extractImportPattern = new RegExp(
   "dg",
 );
 
-export const isfilePattern = (type: string) => new RegExp(`.${type}$`);
+export const regImpsPatn = new RegExp(
+  `import[\\s\\S]+from\\s+${depsPattern.source}`,
+  "dg",
+);
 
-export const getFileName = (file: string) => {
+export function isfilePattern(type: string) {
+  return new RegExp(`.${type}$`);
+}
+
+export function getFileName(file: string) {
   const pattern = /^(?<filename>\w+)\W?/;
   return pattern.exec(file).groups?.filename;
-};
+}
+
+export function splitDir(path: string) {
+  const patn = new RegExp(
+    `^(?<drive>\\w+:${dirSepPatn.source})(?<dir>\\S+)(?<ending>${dirSepPatn.source}\\w+)`,
+  );
+
+  const { drive, dir, ending } = patn.exec(path)?.groups || {};
+  return { drive, dir, ending };
+}

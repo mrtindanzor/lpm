@@ -1,76 +1,39 @@
-import type { CLI_ACTIONS, CLI_OPTIONS, CONFIG_TYPE } from "../types/config";
+import type { CONFIG_TYPE } from "../types/config";
 import {
+  CONFIG,
   CONFIG_NAME,
   EXTRACT_IMPORT_REGEX_KEYS,
-  PACKAGE_KEYS,
+  REGISTRY_DECORATOR,
 } from "./static_constants";
 import type {
   EXTRACT_IMPORT_KEY_PROPS,
   RetryAsyncProps,
+  tsConfigType,
 } from "../types/common";
-import type { REGISTRY_PACKAGE_TYPE } from "../types/registry";
-import { extractImportPattern } from "./regPatterns";
-import { ACTIONS } from "./constants";
-import { joinPaths, readAndParseFileToJson } from "./utils";
+import { regImpsPatn, splitDir } from "./regPatterns";
+import { joinPaths, readAndParseFileToJson, writeFileToPath } from "./utils";
+import fs from "node:fs/promises";
+import tryCatch from "./lib";
+import { ts } from "ts-morph";
 
-const isAction = (value: unknown): value is CLI_ACTIONS => {
-  return ACTIONS.includes(value as CLI_ACTIONS);
-};
-
-export const isPackageKey = (
-  value: unknown,
-): value is keyof REGISTRY_PACKAGE_TYPE => {
-  return PACKAGE_KEYS.includes(value as keyof REGISTRY_PACKAGE_TYPE);
-};
-
-export const getArguments = (cliArgs: string[]) => {
-  const data = {};
-  let action: CLI_ACTIONS | null = null;
-
-  cliArgs.forEach((arg) => {
-    if (isAction(arg)) {
-      action = arg;
-
-      return;
-    }
-
-    if (!arg.startsWith("--")) return;
-
-    const argIndex = cliArgs.indexOf(arg);
-    if (argIndex === -1) return;
-
-    const input = cliArgs[argIndex + 1];
-    if (input) data[arg] = input;
-  });
-
-  return [action as CLI_ACTIONS | null, data as Partial<CLI_OPTIONS>] as const;
-};
-
-export const getConfigFile = async (): Promise<null | CONFIG_TYPE> => {
+export async function getConfigFile(): Promise<null | CONFIG_TYPE> {
   const __dir = process.cwd();
 
   const configPath = joinPaths(__dir, `${CONFIG_NAME}.json`);
 
-  const config = await readAndParseFileToJson<CONFIG_TYPE>(configPath);
+  const config = await readAndParseFileToJson<CONFIG_TYPE | undefined>(
+    configPath,
+  );
 
   return config;
-};
+}
 
-export const getPackageJson = async (): Promise<null | CONFIG_TYPE> => {
-  const __dir = process.cwd();
-
-  const configPath = joinPaths(__dir, `package.json`);
-
-  const config = await readAndParseFileToJson<CONFIG_TYPE>(configPath);
-  return config;
-};
-
-export const RetryAsync = async <T>({
+export async function RetryAsync<T>({
   cb,
   error,
   retries = 1,
   returnType = "string",
-}: RetryAsyncProps<T>) => {
+}: RetryAsyncProps<T>) {
   let answer: T;
 
   for (let retried = 0; retried < retries; retried++) {
@@ -81,10 +44,10 @@ export const RetryAsync = async <T>({
   }
 
   throw error;
-};
+}
 
 export function getDepsFromFile(file: string) {
-  const entries = file.matchAll(extractImportPattern).toArray();
+  const entries = file.matchAll(regImpsPatn).toArray();
 
   const results = entries.map(extractRegGpNameAndIndices);
 
@@ -105,4 +68,88 @@ export function extractRegGpNameAndIndices(group: RegExpExecArray) {
     ...(prev || {}),
     ...curr,
   })) as EXTRACT_IMPORT_KEY_PROPS;
+}
+
+export async function isFileExists(path: string) {
+  const [, notExists] = await tryCatch(fs.access(path));
+
+  return !notExists;
+}
+
+export async function getProjectRoot() {
+  const pkgFile = "package.json";
+  let root = "";
+  let currDir = process.cwd(); //getEndingPath
+  let completed = false;
+
+  while (!root && !completed) {
+    const found = await isFileExists(joinPaths(currDir, pkgFile));
+
+    if (found) {
+      root = currDir;
+      break;
+    }
+
+    const { drive, dir } = splitDir(currDir);
+
+    if (!dir) {
+      completed = true;
+      break;
+    }
+    currDir = joinPaths(drive, dir);
+  }
+
+  return root;
+}
+
+export function generateConfig(dest: string) {
+  const config: CONFIG_TYPE = { ...CONFIG, destination: dest };
+
+  return JSON.stringify(config, null, 2);
+}
+
+export async function getTsConfig() {
+  const root = await getProjectRoot();
+
+  const config = ts.readConfigFile(
+    joinPaths(root, "tsconfig.json"),
+    ts.sys.readFile,
+  );
+
+  return (config?.config || {}) as tsConfigType;
+}
+
+export async function updateTsConfigWithPath(path: string) {
+  const root = await getProjectRoot();
+  const tsConfig = await getTsConfig();
+
+  const updatedTsConfig: tsConfigType = {
+    ...(tsConfig ?? {}),
+    compilerOptions: {
+      ...(tsConfig?.compilerOptions ?? {}),
+      paths: {
+        ...(tsConfig?.compilerOptions?.paths ?? {}),
+        [`${REGISTRY_DECORATOR}/*`]: [path],
+      },
+    },
+  };
+
+  await writeFileToPath(
+    root,
+    `tsconfig.json`,
+    JSON.stringify(updatedTsConfig, null, 2),
+  );
+}
+
+export async function createConfigFile(path: string) {
+  const root = await getProjectRoot();
+  await fs.mkdir(joinPaths(root, path), {
+    recursive: true,
+  });
+  const lpmConfig = generateConfig(path);
+  await writeFileToPath(root, `${CONFIG_NAME}.json`, lpmConfig);
+}
+
+export function isString(value: unknown): value is string {
+  return typeof value === "string";
 }
