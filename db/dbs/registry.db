@@ -5,3 +5,9 @@
 {"type":"hooks","name":"usescrollelement","deps":["react"],"files":["/hooks/useScrollElement/type.ts","/hooks/useScrollElement/useScrollElement.ts"],"_id":"ZuHwKEXDbRGX2Z4M"}
 {"$$indexCreated":{"fieldName":"name","unique":false,"sparse":false}}
 {"$$indexCreated":{"fieldName":"type","unique":false,"sparse":false}}
+{"type":"hooks","name":"useautohide","deps":["react"],"files":["/hooks/useAutoHide.ts"],"_id":"KecEGfieZOmEG455"}
+{"type":"hooks","name":"usedebounce","deps":["react"],"files":["/hooks/useDebounce.ts"],"_id":"73DtiQov0mvbfwlh"}
+{"type":"hooks","name":"usedevicewidth","deps":["react"],"files":["/hooks/useDeviceWidth.ts"],"_id":"UOOaYfBmkSKAWQNW"}
+{"type":"hooks","name":"useframerscroll","deps":["framer-motion","react"],"files":["/hooks/useFramerScroll/type.ts","/hooks/useFramerScroll/useFramerScroll.ts"],"_id":"hN00v6eTAJRsXJe3"}
+{"type":"hooks","name":"useintersection","deps":["react"],"files":["/hooks/useIntersection.ts"],"_id":"WiszOC75cJh0zlUT"}
+{"type":"hooks","name":"usescrollelement","deps":["react"],"files":["/hooks/useScrollElement/type.ts","/hooks/useScrollElement/useScrollElement.ts"],"_id":"ZuHwKEXDbRGX2Z4M"}

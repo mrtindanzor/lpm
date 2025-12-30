@@ -1,8 +1,8 @@
-import { builder } from "../../utils/build/registry";
+import { builder } from "../../utils/build/registry"
 
 export async function buildRegistry() {
-  await builder();
+	await builder()
 
-  console.log("");
-  console.log(" Completed build successfuly");
+	console.log("")
+	console.log(" Completed build successfuly")
 }

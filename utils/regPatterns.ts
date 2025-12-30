@@ -15,58 +15,58 @@
 // dfNdExpPatn #default and name export works for React, { module }
 // df_ndExpPatn #default or named export pattern, works for import React | { useState, useRef }
 
-import { REGISTRY_DECORATOR } from "./static_constants";
+import { REGISTRY_DECORATOR } from "./static_constants"
 
-const dirSepPatn = /(\\|\\\\|\/\/|\/)/;
-export const dfTsExpPatn = /(?<tsTypes>type\s+)/;
-export const ndTsExpPatn = /(?<tsTypes>type\s+\w(s*,))/;
+const dirSepPatn = /(\\|\\\\|\/\/|\/)/
+export const dfTsExpPatn = /(?<tsTypes>type\s+)/
+export const ndTsExpPatn = /(?<tsTypes>type\s+\w(s*,))/
 
 export const ndExpPatn =
-  /(type\s+)?[{][\s]*(?<namedExp>((type\s+)?\w+\s*(,\s*\w+)?),?\s*?)+[}]/;
-export const dfExpPatn = /(?<defaultExp>(type\s+)?\w+)/;
+	/(type\s+)?[{][\s]*(?<namedExp>((type\s+)?\w+\s*(,\s*\w+)?),?\s*?)+[}]/
+export const dfExpPatn = /(?<defaultExp>(type\s+)?\w+)/
 export const df_ndExpPatn = new RegExp(
-  `(${dfExpPatn.source}|${ndExpPatn.source})`,
-);
+	`(${dfExpPatn.source}|${ndExpPatn.source})`,
+)
 export const dfNdExpPatn = new RegExp(
-  `${dfExpPatn.source}\\s*,\\s*${ndExpPatn.source}`,
-);
+	`${dfExpPatn.source}\\s*,\\s*${ndExpPatn.source}`,
+)
 export const expPatn = new RegExp(
-  `(${df_ndExpPatn.source}|${dfNdExpPatn.source})`,
-);
-export const relDepsPattern = /(?<relDeps>((\.){0,2}\/)+\w+(\/w+)?)/;
-export const extDepsPattern = /(?<extDeps>@?\w+(\/\w+)*)/;
+	`(${df_ndExpPatn.source}|${dfNdExpPatn.source})`,
+)
+export const relDepsPattern = /(?<relDeps>((\.){0,2}\/)+\w+(\/w+)?)/
+export const extDepsPattern = /(?<extDeps>@?\w+(\/\w+)*)/
 export const regDepsPattern = new RegExp(
-  `(?<regDeps>${REGISTRY_DECORATOR}(\\/\\w+)+)`,
-);
+	`(?<regDeps>${REGISTRY_DECORATOR}(\\/\\w+)+)`,
+)
 
 export const depsPattern = new RegExp(
-  `['"](${regDepsPattern.source}|${relDepsPattern.source}|${extDepsPattern.source})['"]\\s*`,
-);
+	`['"](${regDepsPattern.source}|${relDepsPattern.source}|${extDepsPattern.source})['"]\\s*`,
+)
 
 export const extractImportPattern = new RegExp(
-  `(?<import>import)\\s+${expPatn.source}?\\s+(?<from>from)\\s+${depsPattern.source}`,
-  "dg",
-);
+	`(?<import>import)\\s+${expPatn.source}?\\s+(?<from>from)\\s+${depsPattern.source}`,
+	"dg",
+)
 
 export const regImpsPatn = new RegExp(
-  `import[\\s\\S]+from\\s+${depsPattern.source}`,
-  "dg",
-);
+	`import[\\s\\S]+from\\s+${depsPattern.source}`,
+	"dg",
+)
 
 export function isfilePattern(type: string) {
-  return new RegExp(`.${type}$`);
+	return new RegExp(`.${type}$`)
 }
 
 export function getFileName(file: string) {
-  const pattern = /^(?<filename>\w+)\W?/;
-  return pattern.exec(file).groups?.filename;
+	const pattern = /^(?<filename>\w+)\W?/
+	return pattern.exec(file).groups?.filename
 }
 
 export function splitDir(path: string) {
-  const patn = new RegExp(
-    `^(?<drive>\\w+:${dirSepPatn.source})(?<dir>\\S+)(?<ending>${dirSepPatn.source}\\w+)`,
-  );
+	const patn = new RegExp(
+		`^(?<drive>\\w+:${dirSepPatn.source})(?<dir>\\S+)(?<ending>${dirSepPatn.source}\\w+)`,
+	)
 
-  const { drive, dir, ending } = patn.exec(path)?.groups || {};
-  return { drive, dir, ending };
+	const { drive, dir, ending } = patn.exec(path)?.groups || {}
+	return { drive, dir, ending }
 }
