@@ -47,7 +47,12 @@ export function writeFileInPlace({
 }
 
 export function isTsJsFile(name: string) {
-  return isfilePattern("ts").test(name) || isfilePattern("js").test(name);
+  return (
+    isfilePattern("ts").test(name) ||
+    isfilePattern("js").test(name) ||
+    isfilePattern("tsx").test(name) ||
+    isfilePattern("jsx").test(name)
+  );
 }
 
 export async function readAndParseFileToJson<T>(path: string) {

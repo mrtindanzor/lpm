@@ -2,15 +2,17 @@
   "author": {
     "name": "Mr. Tindanzor Simon"
   },
+  "scripts": {
+    "lint": "biome check --write && tsc --noEmit"
+  },
   "bin": {
     "lpm": "./index.js"
   },
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "@types/pouchdb": "^6.4.2",
+    "biome": "^0.3.3",
     "nedb-promises": "^6.2.3",
-    "pouchdb": "^9.0.0",
-    "pouchdb-find": "^9.0.0",
     "ts-morph": "^27.0.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
