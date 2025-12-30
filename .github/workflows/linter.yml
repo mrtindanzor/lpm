@@ -1,0 +1,24 @@
+name: LPM Linting
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  linter:
+    name: Linter
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: start lint
+        run: |
+          bun install
+          bun lint
+          echo "Completed gracefully"
