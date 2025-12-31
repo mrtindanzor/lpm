@@ -76,10 +76,10 @@ export async function isFileExists(path: string) {
 	return !notExists
 }
 
-export async function getProjectRoot() {
+export async function getProjectRoot(path?: string) {
 	const pkgFile = "package.json"
 	let root = ""
-	let currDir = process.cwd() //getEndingPath
+	let currDir = path || process.cwd() //getEndingPath
 	let completed = false
 
 	while (!root && !completed) {

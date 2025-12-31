@@ -85,7 +85,6 @@ export async function builder() {
 		}
 
 		const db = await getRegistryDb()
-
 		await tryCatch(db.remove({ type: { $nin: validDirs } }, { multi: true }))
 	}
 
@@ -127,10 +126,6 @@ export const pkgsBuilder = async (basePath: string) => {
 				),
 			)
 		}
-
-		await tryCatch(
-			db.remove({ type: { $nin: validPackages } }, { multi: true }),
-		)
 	}
 }
 
