@@ -2,3 +2,5 @@ node_modules
 .env
 *config.json
 registry.db
+db/dbs/registry.db
+*.db
