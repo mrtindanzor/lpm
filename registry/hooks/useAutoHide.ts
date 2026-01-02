@@ -1,48 +1,63 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react";
+import type { UseAutoHideProps } from "@lpm/types/hooks/useAutoHide";
 
-export function useAutoHide<T = HTMLElement>({
-	setIsOpen,
-	isOpen,
-}: {
-	isOpen: boolean
-	setIsOpen: () => void
-}) {
-	const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
-	const ref = useRef<T>(null)
+export function useAutoHide<T>({
+  setIsOpen,
+  isOpen,
+  event = ["mouseover", "click"],
+}: UseAutoHideProps) {
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const refs = useRef<unknown[]>([]);
 
-	const autoHide = useCallback(
-		(e: Event) => {
-			const el = e.target
-			const trackedElement = ref.current
+  const autoHide = useCallback(
+    (e: Event) => {
+      const el = e.target;
+      const trackedRefs = refs.current;
 
-			if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-			if (
-				!(el instanceof HTMLElement) ||
-				!(trackedElement instanceof HTMLElement)
-			)
-				return
+      let isWithinBounds = false;
 
-			if (!trackedElement.contains(el))
-				timeoutRef.current = setTimeout(() => setIsOpen(), 100)
-		},
-		[setIsOpen],
-	)
-	useEffect(() => {
-		if (!isOpen) return
+      trackedRefs.forEach((ref) => {
+        if (!(el instanceof HTMLElement) || !(ref instanceof HTMLElement))
+          return;
 
-		window.addEventListener("click", autoHide)
-		window.addEventListener("mouseover", autoHide)
+        if (ref.contains(el)) isWithinBounds = true;
+      });
 
-		return () => {
-			window.removeEventListener("click", autoHide)
-			window.removeEventListener("mouseover", autoHide)
-		}
-	}, [autoHide, isOpen])
+      if (!isWithinBounds)
+        timeoutRef.current = setTimeout(() => setIsOpen(), 100);
+    },
+    [setIsOpen],
+  );
 
-	return {
-		ref,
-	}
+  const captureRef = useCallback((index = 0) => {
+    return (ref: T | null) => {
+      refs.current[index] = ref;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (Array.isArray(event)) {
+      event.forEach((e) => {
+        window.addEventListener(e, autoHide);
+      });
+    } else window.addEventListener(event, autoHide);
+
+    return () => {
+      if (Array.isArray(event)) {
+        event.forEach((e) => {
+          window.removeEventListener(e, autoHide);
+        });
+      } else window.removeEventListener(event, autoHide);
+    };
+  }, [event, autoHide, isOpen]);
+
+  return {
+    captureRef,
+  };
 }

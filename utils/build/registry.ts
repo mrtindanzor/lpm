@@ -3,10 +3,10 @@ import fs, { constants } from "node:fs/promises";
 import type { Package_Schema } from "types/db";
 import getRegistryDb from "../../db/registry";
 import { REGISTRY_PATH } from "../constants";
-import tryCatch from "../lib";
+import tryCatch, { arraysToSet } from "../lib";
 import { getFileName, splitDir } from "../regPatterns";
 import { isTsJsFile, joinPaths } from "../utils";
-import { getExternalDeps } from "./imports-resolver";
+import { morpVisit } from "./imports-resolver";
 
 let watcherTimeoutId: ReturnType<typeof setTimeout> = null;
 let parts: string[] = [];
@@ -80,6 +80,8 @@ export async function builder() {
       const __dirname = ending || dir.name;
       const ___dirname = __dirname.replace(/(\/|\\)/g, "");
 
+      if (___dirname === "types") continue;
+
       validDirs.push(___dirname);
 
       const pkg = joinPaths(REGISTRY_PATH, dir.name);
@@ -111,8 +113,8 @@ export const pkgsBuilder = async (basePath: string) => {
 
     for (const dir of dirs) {
       const { deps, files } = await fileResolver(dir, basePath);
-
       const pkgName = getFileName(dir.name).toLowerCase();
+
       validPackages.push(pkgName);
 
       await tryCatch(
@@ -138,49 +140,52 @@ export const pkgsBuilder = async (basePath: string) => {
   }
 };
 
-export const dirResolver = async (path: string) => {
-  const deps: Set<string> = new Set();
-  const files: Set<string> = new Set();
-
+export async function dirResolver(path: string) {
   const [entries] = await tryCatch(fs.readdir(path, { withFileTypes: true }));
   if (!entries) return { deps: [], files: [] };
 
-  await Promise.all(
+  const depsFiles = await Promise.all(
     entries.map(async (entry) => {
-      const { deps: _deps, files: _files } = await fileResolver(entry, path);
-      _files.forEach((file) => {
-        files.add(file);
-      });
-      _deps.forEach((dep) => {
-        deps.add(dep);
-      });
+      const depsFiles = await fileResolver(entry, path);
 
-      return;
+      return depsFiles;
     }),
   );
 
-  return { deps: [...deps], files: [...files] };
-};
+  const deps: string[] = [];
+  const files: string[] = [];
 
-async function fileResolver(
+  let result = { deps, files };
+
+  if (depsFiles.length > 0)
+    result = depsFiles.reduce((accu, depsFile) => {
+      return {
+        deps: [...arraysToSet(accu.deps, depsFile.deps)],
+        files: [...arraysToSet(accu.files, depsFile.files)],
+      };
+    });
+
+  return result;
+}
+
+export async function fileResolver(
   entry: Dirent<string>,
   parentDir: string,
-): Promise<Omit<Package_Schema, "name" | "type">> {
+): Promise<Pick<Package_Schema, "files" | "deps">> {
   const filePath = joinPaths(parentDir, entry.name);
 
   if (!entry.isFile()) {
     const results = await dirResolver(filePath);
-
     return results;
   }
 
-  const deps = await getExternalDeps(filePath);
+  const { deps, files } = await morpVisit(filePath);
   const fileName = filePath
     .replace(REGISTRY_PATH, "")
     .replace(/(\\\\|\\)/g, "/");
 
   return {
-    files: isTsJsFile(filePath) ? [fileName] : [],
-    deps: [...deps],
+    files: [...files, isTsJsFile(filePath) ? fileName : ""],
+    deps,
   };
 }

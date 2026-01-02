@@ -1,16 +1,19 @@
+"use client";
+
 import { cn } from "@lpm/utils/cn";
+import { useId } from "react";
 import Input from "./Input";
-import type { FInputProps } from "./type";
+import type { FInputProps } from "@lpm/types/ui/Input";
 
 export default function FInput({
-  id,
   label,
   className,
-  icon: Icon,
   inputClassName,
   labelClassName,
   ...rest
 }: FInputProps) {
+  const id = useId();
+
   return (
     <div className={cn("relative group overflow-hidden", className)}>
       <label
@@ -19,11 +22,7 @@ export default function FInput({
       >
         {label}
       </label>
-      <Input
-        id={id}
-        {...rest}
-        className={cn(Icon ? "py-2.5 pl-12 " : "", inputClassName)}
-      />
+      <Input id={id} {...rest} className={cn(inputClassName)} />
     </div>
   );
 }

@@ -4,3 +4,4 @@ node_modules
 registry.db
 db/dbs/registry.db
 *.db
+*.db
