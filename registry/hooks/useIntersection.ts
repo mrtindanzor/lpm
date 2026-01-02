@@ -6,7 +6,7 @@ export default function useIntersection<T = HTMLDivElement>({
   threshold = 0.5,
   rootMargin = "0px",
   unobserve,
-}: UseIntersectionProps) {
+}: UseIntersectionProps = {}) {
   const ref = useRef<T>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
 

@@ -5,3 +5,4 @@ registry.db
 db/dbs/registry.db
 *.db
 *.db
+*.db

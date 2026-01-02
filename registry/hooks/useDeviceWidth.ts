@@ -24,7 +24,7 @@ export default function useMatchesWidth({
   size = "sm",
   comparison = "<",
   customSize,
-}: UseDeviceWidthProps) {
+}: UseDeviceWidthProps = {}) {
   const [matchesDeviceWidth, setMatchesDeviceWidth] = useState<boolean>(false);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
-export type UseIntersectionProps =  {
-	threshold?: number
-	rootMargin?: string
-	unobserve?: boolean
-} = {}
+export type UseIntersectionProps = {
+  threshold?: number;
+  rootMargin?: string;
+  unobserve?: boolean;
+};

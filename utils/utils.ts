@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import type { Write_File_Props } from "types/common";
 import tryCatch, { syncTryCatch } from "./lib";
-import { isfilePattern } from "./regPatterns";
 
 export function joinPaths(base: string, ...paths: string[]) {
   return path.join(base, ...paths);
