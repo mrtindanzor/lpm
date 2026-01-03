@@ -1,9 +1,8 @@
 import type { Dirent } from "node:fs";
 import fs, { constants } from "node:fs/promises";
-import type { Package_Schema } from "types/db";
 import getRegistryDb from "../../db/registry";
 import { REGISTRY_PATH } from "../constants";
-import tryCatch, { arraysToSet, printLines } from "../lib";
+import tryCatch, { arraysToSet } from "../lib";
 import { getFileName, splitDir } from "../regPatterns";
 import { isTsJsFile, joinPaths } from "../utils";
 import { getExternalDeps, VISITED } from "./imports-resolver";
