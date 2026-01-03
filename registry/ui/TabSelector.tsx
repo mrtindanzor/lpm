@@ -1,9 +1,9 @@
 "use client";
 
-import { toCapitalized } from "@lpm/utils/tocapitalized";
-import Button from "@lpm/ui/Buttons/Button";
-import type { TabSelectorProps } from "@lpm/types/ui/TabSelector";
-import { cn } from "@lpm/utils/cn";
+import type { TabSelectorProps } from "lpm/types/ui/TabSelector";
+import Button from "lpm/ui/Buttons/Button";
+import { cn } from "lpm/utils/cn";
+import { toCapitalized } from "lpm/utils/tocapitalized";
 
 export default function TabSelector<T extends string>({
   selected,

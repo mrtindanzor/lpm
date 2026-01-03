@@ -1,19 +1,19 @@
 "use client";
 
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
-import { cn } from "@lpm/utils/cn";
-import { AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { useAutoHide } from "@lpm/hooks/useAutoHide";
-import type { ButtonProps, StyledLinkProps } from "@lpm/types/ui/button";
-import Button from "@lpm/ui/Buttons/Button";
-import StyledLink from "@lpm/ui/Buttons/Link";
-import FramerAnimatePosition from "@lpm/ui/Framer/AnimatePosition";
+import { useAutoHide } from "lpm/hooks/useAutoHide";
+import type { ButtonProps, StyledLinkProps } from "lpm/types/ui/button";
 import type {
   CtaCardProps,
   CtaItemProps,
   FloatingCtaProps,
-} from "@lpm/types/ui/FloatigCta";
+} from "lpm/types/ui/FloatigCta";
+import Button from "lpm/ui/Buttons/Button";
+import StyledLink from "lpm/ui/Buttons/Link";
+import FramerAnimatePosition from "lpm/ui/Framer/AnimatePosition";
+import { cn } from "lpm/utils/cn";
+import { AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 export const CTA_lIST: CtaItemProps[] = [];
 

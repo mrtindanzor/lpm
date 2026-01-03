@@ -1,22 +1,13 @@
 import { Project } from "ts-morph";
+import { WORKING_DIR } from "../../utils/constants";
 import { REGISTRY_DECORATOR } from "../static_constants";
 import { isTsJsFile, joinPaths } from "../utils";
-import { WORKING_DIR } from "../../utils/constants";
-import type { Package_Schema } from "../../types/db";
+import { arraysToSet } from "../../utils/lib";
 
-const VISITED: Record<string, { deps: Set<string>; fils: Set<string> }>[] = [];
-
-export async function morpVisit(
-  path: string,
-): Promise<Pick<Package_Schema, "deps" | "files">> {
-  const visited = VISITED[path];
-
-  if (!visited) {
-    VISITED[path] = await getExternalDeps(path);
-  }
-
-  return VISITED[path];
-}
+export const VISITED = new Map<
+  string,
+  Promise<{ deps: Set<string>; files: Set<string> }>
+>();
 
 const project = new Project({
   tsConfigFilePath: joinPaths(WORKING_DIR, "tsconfig.json"),
@@ -34,63 +25,52 @@ const getPathPatn = new RegExp(
 const extDepPatn = /(?<dep>@?((\w+-)*\w)+)(\/)?/;
 
 export async function getExternalDeps(filepath: string) {
-  if (!isTsJsFile(filepath)) return { deps: [], files: [] };
+  if (VISITED.has(filepath)) return VISITED.get(filepath);
 
-  const sourceFile = project.addSourceFileAtPath(filepath);
-  await sourceFile.refreshFromFileSystem();
+  const visitPromise = (async () => {
+    let deps: Set<string> = new Set();
+    let files: Set<string> = new Set();
 
-  const imports = sourceFile.getImportDeclarations();
+    if (!isTsJsFile(filepath)) return { deps, files };
 
-  const depsFiles = await Promise.all(
-    imports.map(async (imp) => {
-      const deps: Set<string> = new Set();
-      const files: Set<string> = new Set();
+    const sourceFile = project.addSourceFileAtPath(filepath);
+    await sourceFile.refreshFromFileSystem();
 
+    for (const imp of sourceFile.getImportDeclarations()) {
       const mod = imp.getModuleSpecifierValue();
-      if (mod.startsWith("node:")) null;
+      if (mod.startsWith("node:")) continue;
       else if (mod.startsWith(".") || mod.startsWith(REGISTRY_DECORATOR)) {
         const source = imp.getModuleSpecifierSourceFile();
 
-        if (source) {
-          const path = source.getFilePath();
-          const fileLocation = getPathPatn.exec(path)?.groups?.path;
+        if (!source) continue;
 
-          const { deps: nestedDeps, files: nestedFiles } =
-            await morpVisit(path);
+        const resolvedPath = source.getFilePath();
+        const fileLocation = getPathPatn.exec(resolvedPath)?.groups?.path;
 
-          nestedDeps.forEach((dep) => {
-            deps.add(dep);
-          });
-
-          nestedFiles.forEach((file) => {
-            files.add(file);
-          });
-
+        const result = await getExternalDeps(resolvedPath);
+        if (!result) {
           files.add(fileLocation);
+          continue;
         }
+
+        const { deps: nestedDeps, files: nestedFiles } = result;
+
+        deps = arraysToSet(nestedDeps, deps);
+        files = arraysToSet(nestedFiles, files);
+
+        files.add(fileLocation);
       } else {
         const depName = extDepPatn.exec(imp.getModuleSpecifierValue())?.groups
           ?.dep;
 
         deps.add(depName);
       }
+    }
 
-      return { deps, files };
-    }),
-  );
+    return { deps, files };
+  })();
 
-  const deps: Set<string> = new Set();
-  const files: Set<string> = new Set();
+  VISITED.set(filepath, visitPromise);
 
-  let result = { deps, files };
-
-  if (depsFiles.length > 0)
-    result = depsFiles.reduce((accu, depsFile) => {
-      return {
-        deps: new Set([...(accu?.deps || []), ...depsFile.deps]),
-        files: new Set([...(accu?.files || []), ...depsFile.files]),
-      };
-    });
-
-  return result;
+  return visitPromise;
 }

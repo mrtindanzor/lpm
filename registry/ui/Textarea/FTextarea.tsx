@@ -1,17 +1,17 @@
 "use client";
 
-import { cn } from "@lpm/utils/cn";
+import type { FTextareaProps } from "lpm/types/ui/Textarea";
+import { cn } from "lpm/utils/cn";
 import { useId } from "react";
-import Input from "./Input";
-import type { FInputProps } from "@lpm/types/ui/Input";
+import Textarea from "./Textarea";
 
-export default function FInput({
+export default function FTextarea({
   label,
   className,
-  inputClassName,
+  textClassName,
   labelClassName,
   ...rest
-}: FInputProps) {
+}: FTextareaProps) {
   const id = useId();
 
   return (
@@ -22,7 +22,8 @@ export default function FInput({
       >
         {label}
       </label>
-      <Input id={id} {...rest} className={cn(inputClassName)} />
+
+      <Textarea id={id} {...rest} className={cn(textClassName)} />
     </div>
   );
 }

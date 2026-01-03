@@ -34,7 +34,7 @@ export function printLines(total = 2) {
   console.log("");
 }
 
-export function arraysToSet<T>(...args: T[][]) {
+export function arraysToSet<T>(...args: (T[] | Set<T>)[]) {
   const result = args.reduce((acc, cur) => {
     return [...(acc || []), ...(cur || [])];
   });

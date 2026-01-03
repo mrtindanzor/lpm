@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   ElementScrollProps,
   PositionHistoryProps,
-} from "@lpm/types/hooks/useScrollElement";
+} from "lpm/types/hooks/useScrollElement";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function useScrollElement<T extends HTMLElement>({
   rightLoop,

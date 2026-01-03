@@ -1,7 +1,7 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps } from "react"
 
 export type FInputProps = {
-  label: string;
-  inputClassName?: string;
-  labelClassName?: string;
-} & ComponentProps<"input">;
+	label: string
+	inputClassName?: string
+	labelClassName?: string
+} & ComponentProps<"input">

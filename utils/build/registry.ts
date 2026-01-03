@@ -3,10 +3,10 @@ import fs, { constants } from "node:fs/promises";
 import type { Package_Schema } from "types/db";
 import getRegistryDb from "../../db/registry";
 import { REGISTRY_PATH } from "../constants";
-import tryCatch, { arraysToSet } from "../lib";
+import tryCatch, { arraysToSet, printLines } from "../lib";
 import { getFileName, splitDir } from "../regPatterns";
 import { isTsJsFile, joinPaths } from "../utils";
-import { morpVisit } from "./imports-resolver";
+import { getExternalDeps, VISITED } from "./imports-resolver";
 
 let watcherTimeoutId: ReturnType<typeof setTimeout> = null;
 let parts: string[] = [];
@@ -63,7 +63,7 @@ export async function resolveIndividualDir(path: string) {
 export async function builder() {
   const validDirs: string[] = [];
 
-  console.log("- Reading registry files");
+  console.log("- Scanning registry files / folders");
 
   const [dirs, err] = await tryCatch(
     fs.readdir(REGISTRY_PATH, { withFileTypes: true }),
@@ -72,8 +72,8 @@ export async function builder() {
   if (err) return console.log("- Reading registry sections failed ", err);
 
   if (dirs) {
-    console.log("- Resolving Folders");
-    console.log("- Building packages");
+    console.log("- Start package build");
+    console.log();
 
     for (const dir of dirs) {
       const { ending } = splitDir(dir.name);
@@ -92,7 +92,8 @@ export async function builder() {
     await tryCatch(db.remove({ type: { $nin: validDirs } }, { multi: true }));
   }
 
-  console.log("- Registry Updated ");
+  console.log();
+  console.log("+ Registry Updated ");
 }
 
 export const pkgsBuilder = async (basePath: string) => {
@@ -105,11 +106,12 @@ export const pkgsBuilder = async (basePath: string) => {
   if (err) return console.log("- Reading packages sections failed ", err);
 
   if (dirs) {
-    console.log("- Reading packages");
     const db = await getRegistryDb();
 
     const { ending: __dirname } = splitDir(basePath);
     const ___dirname = __dirname.replace(/(\/|\\)/g, "");
+
+    if (___dirname) console.log(`- Building [ ${___dirname} ]`);
 
     for (const dir of dirs) {
       const { deps, files } = await fileResolver(dir, basePath);
@@ -141,51 +143,52 @@ export const pkgsBuilder = async (basePath: string) => {
 };
 
 export async function dirResolver(path: string) {
-  const [entries] = await tryCatch(fs.readdir(path, { withFileTypes: true }));
-  if (!entries) return { deps: [], files: [] };
+  if (VISITED.has(path)) return VISITED.get(path);
 
-  const depsFiles = await Promise.all(
-    entries.map(async (entry) => {
+  const visitPromise = (async () => {
+    const [entries] = await tryCatch(fs.readdir(path, { withFileTypes: true }));
+
+    let deps: Set<string> = new Set();
+    let files: Set<string> = new Set();
+
+    if (!entries) return { deps, files };
+
+    for (const entry of entries) {
       const depsFiles = await fileResolver(entry, path);
+      deps = arraysToSet(deps, depsFiles.deps);
+      files = arraysToSet(files, depsFiles.files);
+    }
 
-      return depsFiles;
-    }),
-  );
+    return { deps, files };
+  })();
 
-  const deps: string[] = [];
-  const files: string[] = [];
+  VISITED.set(path, visitPromise);
 
-  let result = { deps, files };
-
-  if (depsFiles.length > 0)
-    result = depsFiles.reduce((accu, depsFile) => {
-      return {
-        deps: [...arraysToSet(accu.deps, depsFile.deps)],
-        files: [...arraysToSet(accu.files, depsFile.files)],
-      };
-    });
-
-  return result;
+  return visitPromise;
 }
 
-export async function fileResolver(
-  entry: Dirent<string>,
-  parentDir: string,
-): Promise<Pick<Package_Schema, "files" | "deps">> {
+export async function fileResolver(entry: Dirent<string>, parentDir: string) {
   const filePath = joinPaths(parentDir, entry.name);
+  if (VISITED.has(filePath)) return VISITED.get(filePath);
 
-  if (!entry.isFile()) {
-    const results = await dirResolver(filePath);
-    return results;
-  }
+  const visitPromise = (async () => {
+    if (!entry.isFile()) {
+      const results = await dirResolver(filePath);
+      return results;
+    }
 
-  const { deps, files } = await morpVisit(filePath);
-  const fileName = filePath
-    .replace(REGISTRY_PATH, "")
-    .replace(/(\\\\|\\)/g, "/");
+    const { deps, files } = await getExternalDeps(filePath);
 
-  return {
-    files: [...files, isTsJsFile(filePath) ? fileName : ""],
-    deps,
-  };
+    const fileName = filePath
+      .replace(REGISTRY_PATH, "")
+      .replace(/(\\\\|\\)/g, "/");
+
+    return {
+      deps,
+      files: isTsJsFile(filePath) ? arraysToSet(files, [fileName]) : files,
+    };
+  })();
+
+  VISITED.set(filePath, visitPromise);
+  return visitPromise;
 }

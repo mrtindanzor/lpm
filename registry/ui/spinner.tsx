@@ -1,5 +1,5 @@
+import { cn } from "lpm/utils/cn";
 import type { ComponentProps } from "react";
-import { cn } from "@lpm/utils/cn";
 
 export default function Spinner({
   className,

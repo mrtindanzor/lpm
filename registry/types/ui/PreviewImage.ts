@@ -1,4 +1,4 @@
 export type PreviewImageProps = {
-  doUpload?: (file: File) => void;
-  file: File;
-};
+	doUpload?: (file: File) => void
+	file: File
+}

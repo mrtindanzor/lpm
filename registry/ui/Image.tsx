@@ -1,7 +1,7 @@
-import { cn } from "@lpm/utils/cn";
+import type { MyImageProps } from "lpm/types/ui/Image";
+import { cn } from "lpm/utils/cn";
 import { ImageIcon } from "lucide-react";
 import Image from "next/image";
-import type { MyImageProps } from "@lpm/types/ui/MyImage";
 
 export default function MyImage({
   title,

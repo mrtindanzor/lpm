@@ -1,5 +1,5 @@
 export type UpdateProps = {
-  message: string;
-  error?: boolean;
-  success?: boolean;
-};
+	message: string
+	error?: boolean
+	success?: boolean
+}

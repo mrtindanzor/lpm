@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import type { UpdateProps } from "@lpm/types/hooks/useResponse";
+import type { UpdateProps } from "lpm/types/hooks/useResponse";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function useResponse<El extends HTMLElement>() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);

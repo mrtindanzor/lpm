@@ -1,8 +1,8 @@
 "use client";
 
+import type { FramerScrollWrapperProps } from "lpm/types/hooks/useFramerScroll";
 import { useScroll, useSpring, useTransform } from "framer-motion";
 import { useRef } from "react";
-import type { FramerScrollWrapperProps } from "@lpm/types/hooks/useFramerScroll";
 
 export default function useFramerScroll<
   T extends HTMLElement = HTMLDivElement,

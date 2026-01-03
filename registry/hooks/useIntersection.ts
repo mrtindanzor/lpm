@@ -1,6 +1,6 @@
 "use client";
+import type { UseIntersectionProps } from "lpm/types/hooks/useIntersection";
 import { useEffect, useRef, useState } from "react";
-import type { UseIntersectionProps } from "@lpm/types/hooks/useIntersection";
 
 export default function useIntersection<T = HTMLDivElement>({
   threshold = 0.5,

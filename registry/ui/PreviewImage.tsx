@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { PreviewImageProps } from "./type";
-import MyImage from "../Image";
+import MyImage from "./Image";
+import type { PreviewImageProps } from "lpm/types/ui/PreviewImage";
 
 export default function PreviewImage({ file, doUpload }: PreviewImageProps) {
   const [image, setImage] = useState("");

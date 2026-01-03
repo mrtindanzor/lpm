@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouteChangeContextProps } from "lpm/types/providers/routing";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   createContext,
@@ -10,7 +11,6 @@ import {
   useMemo,
   useRef,
 } from "react";
-import type { RouteChangeContextProps } from "@lpm/types/providers/routing";
 
 const RouteChangeContext = createContext<RouteChangeContextProps | null>(null);
 

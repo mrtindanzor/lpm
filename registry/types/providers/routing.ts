@@ -1,3 +1,3 @@
 export type RouteChangeContextProps = {
-  routeHistoryRef: React.RefObject<string[]>;
-};
+	routeHistoryRef: React.RefObject<string[]>
+}

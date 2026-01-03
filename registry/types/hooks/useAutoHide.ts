@@ -1,5 +1,5 @@
 export type UseAutoHideProps = {
-  isOpen: boolean;
-  setIsOpen: () => void;
-  event?: "mouseover" | "click" | ("mouseover" | "click")[];
-};
+	isOpen: boolean
+	setIsOpen: () => void
+	event?: "mouseover" | "click" | ("mouseover" | "click")[]
+}

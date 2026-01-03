@@ -1,7 +1,7 @@
 "use client";
 
+import type { UseAutoHideProps } from "lpm/types/hooks/useAutoHide";
 import { useCallback, useEffect, useRef } from "react";
-import type { UseAutoHideProps } from "@lpm/types/hooks/useAutoHide";
 
 export function useAutoHide<T>({
   setIsOpen,

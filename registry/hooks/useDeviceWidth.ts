@@ -1,5 +1,5 @@
+import type { UseDeviceWidthProps } from "lpm/types/hooks/useDeviceWidth";
 import { useEffect, useState } from "react";
-import type { UseDeviceWidthProps } from "@lpm/types/hooks/useDeviceWidth";
 
 const sizes = {
   MOBILE_SCREEN_SIZE: 640,
