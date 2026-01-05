@@ -1,193 +1,191 @@
-import type { Dirent } from "node:fs";
-import fs, { constants } from "node:fs/promises";
-import getRegistryDb from "../../db/registry";
-import { REGISTRY_PATH } from "../constants";
-import tryCatch, { arraysToSet } from "../lib";
-import { getFileName, splitDir } from "../regPatterns";
-import { isTsJsFile, joinPaths } from "../utils";
-import { getExternalDeps, VISITED } from "./imports-resolver";
+import type { Dirent } from "node:fs"
+import fs, { constants } from "node:fs/promises"
+import getRegistryDb from "../../db/registry"
+import { REGISTRY_PATH } from "../constants"
+import tryCatch, { arraysToSet } from "../lib"
+import { getFileName, splitDir } from "../regPatterns"
+import { isTsJsFile, joinPaths } from "../utils"
+import { getExternalDeps, VISITED } from "./imports-resolver"
 
-let watcherTimeoutId: ReturnType<typeof setTimeout> = null;
-let parts: string[] = [];
+let watcherTimeoutId: ReturnType<typeof setTimeout> = null
+let parts: string[] = []
 
 export async function watchBuild() {
-  const watcher = fs.watch(REGISTRY_PATH, { recursive: true });
+	const watcher = fs.watch(REGISTRY_PATH, { recursive: true })
 
-  console.log("👁️ ", "Watching registry for file changes...");
+	console.log("👁️ ", "Watching registry for file changes...")
 
-  for await (const event of watcher) {
-    if (event.eventType === "rename" || event.eventType === "change") {
-      const currentSplit = event.filename.split(/(\/|\\)/);
+	for await (const event of watcher) {
+		if (event.eventType === "rename" || event.eventType === "change") {
+			const currentSplit = event.filename.split(/(\/|\\)/)
 
-      const notDelete = currentSplit.length > parts.length;
+			const notDelete = currentSplit.length > parts.length
 
-      const dir = notDelete ? event.filename : parts.join("/");
+			const dir = notDelete ? event.filename : parts.join("/")
 
-      if (notDelete) parts = currentSplit;
+			if (notDelete) parts = currentSplit
 
-      if (watcherTimeoutId) clearTimeout(watcherTimeoutId);
+			if (watcherTimeoutId) clearTimeout(watcherTimeoutId)
 
-      watcherTimeoutId = setTimeout(async () => {
-        await resolveIndividualDir(dir);
-        console.log("- Built packages");
-      }, 3000);
-    }
-  }
+			watcherTimeoutId = setTimeout(async () => {
+				await resolveIndividualDir(dir)
+				console.log("- Built packages")
+			}, 3000)
+		}
+	}
 }
 
 export async function resolveIndividualDir(path: string) {
-  parts = [];
+	parts = []
 
-  const patn = /(\\|\/)?(?<dirname>\w+)(\\|\/)?/;
-  const matched = patn.exec(path);
+	const patn = /(\\|\/)?(?<dirname>\w+)(\\|\/)?/
+	const matched = patn.exec(path)
 
-  const typeName = matched?.groups?.dirname;
+	const typeName = matched?.groups?.dirname
 
-  if (!typeName) return;
+	if (!typeName) return
 
-  const typePath = joinPaths(REGISTRY_PATH, typeName);
+	const typePath = joinPaths(REGISTRY_PATH, typeName)
 
-  const [, notExists] = await tryCatch(fs.access(typePath, constants.F_OK));
-  if (notExists) {
-    const db = await getRegistryDb();
+	const [, notExists] = await tryCatch(fs.access(typePath, constants.F_OK))
+	if (notExists) {
+		const db = await getRegistryDb()
 
-    await tryCatch(
-      db.remove({ type: typeName.toLowerCase() }, { multi: true }),
-    );
-  }
+		await tryCatch(db.remove({ type: typeName.toLowerCase() }, { multi: true }))
+	}
 
-  if (!notExists) await pkgsBuilder(typePath);
+	if (!notExists) await pkgsBuilder(typePath)
 }
 
 export async function builder() {
-  const validDirs: string[] = [];
+	const validDirs: string[] = []
 
-  console.log("- Scanning registry files / folders");
+	console.log("- Scanning registry files / folders")
 
-  const [dirs, err] = await tryCatch(
-    fs.readdir(REGISTRY_PATH, { withFileTypes: true }),
-  );
+	const [dirs, err] = await tryCatch(
+		fs.readdir(REGISTRY_PATH, { withFileTypes: true }),
+	)
 
-  if (err) return console.log("- Reading registry sections failed ", err);
+	if (err) return console.log("- Reading registry sections failed ", err)
 
-  if (dirs) {
-    console.log("- Start package build");
-    console.log();
+	if (dirs) {
+		console.log("- Start package build")
+		console.log()
 
-    for (const dir of dirs) {
-      const { ending } = splitDir(dir.name);
-      const __dirname = ending || dir.name;
-      const ___dirname = __dirname.replace(/(\/|\\)/g, "");
+		for (const dir of dirs) {
+			const { ending } = splitDir(dir.name)
+			const __dirname = ending || dir.name
+			const ___dirname = __dirname.replace(/(\/|\\)/g, "")
 
-      if (___dirname === "types") continue;
+			if (___dirname === "types") continue
 
-      validDirs.push(___dirname);
+			validDirs.push(___dirname)
 
-      const pkg = joinPaths(REGISTRY_PATH, dir.name);
-      await pkgsBuilder(pkg);
-    }
+			const pkg = joinPaths(REGISTRY_PATH, dir.name)
+			await pkgsBuilder(pkg)
+		}
 
-    const db = await getRegistryDb();
-    await tryCatch(db.remove({ type: { $nin: validDirs } }, { multi: true }));
-  }
+		const db = await getRegistryDb()
+		await tryCatch(db.remove({ type: { $nin: validDirs } }, { multi: true }))
+	}
 
-  console.log();
-  console.log("+ Registry Updated ");
+	console.log()
+	console.log("+ Registry Updated ")
 }
 
 export const pkgsBuilder = async (basePath: string) => {
-  const validPackages: string[] = [];
+	const validPackages: string[] = []
 
-  const [dirs, err] = await tryCatch(
-    fs.readdir(basePath, { withFileTypes: true }),
-  );
+	const [dirs, err] = await tryCatch(
+		fs.readdir(basePath, { withFileTypes: true }),
+	)
 
-  if (err) return console.log("- Reading packages sections failed ", err);
+	if (err) return console.log("- Reading packages sections failed ", err)
 
-  if (dirs) {
-    const db = await getRegistryDb();
+	if (dirs) {
+		const db = await getRegistryDb()
 
-    const { ending: __dirname } = splitDir(basePath);
-    const ___dirname = __dirname.replace(/(\/|\\)/g, "");
+		const { ending: __dirname } = splitDir(basePath)
+		const ___dirname = __dirname.replace(/(\/|\\)/g, "")
 
-    if (___dirname) console.log(`- Building [ ${___dirname} ]`);
+		if (___dirname) console.log(`- Building [ ${___dirname} ]`)
 
-    for (const dir of dirs) {
-      const { deps, files } = await fileResolver(dir, basePath);
-      const pkgName = getFileName(dir.name).toLowerCase();
+		for (const dir of dirs) {
+			const { deps, files } = await fileResolver(dir, basePath)
+			const pkgName = getFileName(dir.name).toLowerCase()
 
-      validPackages.push(pkgName);
+			validPackages.push(pkgName)
 
-      await tryCatch(
-        db.update(
-          { name: pkgName },
-          {
-            type: ___dirname,
-            name: pkgName,
-            deps: [...deps],
-            files: [...files],
-          },
-          { upsert: true },
-        ),
-      );
-    }
+			await tryCatch(
+				db.update(
+					{ name: pkgName },
+					{
+						type: ___dirname,
+						name: pkgName,
+						deps: [...deps],
+						files: [...files],
+					},
+					{ upsert: true },
+				),
+			)
+		}
 
-    await tryCatch(
-      db.remove(
-        { type: ___dirname, name: { $nin: validPackages } },
-        { multi: true },
-      ),
-    );
-  }
-};
+		await tryCatch(
+			db.remove(
+				{ type: ___dirname, name: { $nin: validPackages } },
+				{ multi: true },
+			),
+		)
+	}
+}
 
 export async function dirResolver(path: string) {
-  if (VISITED.has(path)) return VISITED.get(path);
+	if (VISITED.has(path)) return VISITED.get(path)
 
-  const visitPromise = (async () => {
-    const [entries] = await tryCatch(fs.readdir(path, { withFileTypes: true }));
+	const visitPromise = (async () => {
+		const [entries] = await tryCatch(fs.readdir(path, { withFileTypes: true }))
 
-    let deps: Set<string> = new Set();
-    let files: Set<string> = new Set();
+		let deps: Set<string> = new Set()
+		let files: Set<string> = new Set()
 
-    if (!entries) return { deps, files };
+		if (!entries) return { deps, files }
 
-    for (const entry of entries) {
-      const depsFiles = await fileResolver(entry, path);
-      deps = arraysToSet(deps, depsFiles.deps);
-      files = arraysToSet(files, depsFiles.files);
-    }
+		for (const entry of entries) {
+			const depsFiles = await fileResolver(entry, path)
+			deps = arraysToSet(deps, depsFiles.deps)
+			files = arraysToSet(files, depsFiles.files)
+		}
 
-    return { deps, files };
-  })();
+		return { deps, files }
+	})()
 
-  VISITED.set(path, visitPromise);
+	VISITED.set(path, visitPromise)
 
-  return visitPromise;
+	return visitPromise
 }
 
 export async function fileResolver(entry: Dirent<string>, parentDir: string) {
-  const filePath = joinPaths(parentDir, entry.name);
-  if (VISITED.has(filePath)) return VISITED.get(filePath);
+	const filePath = joinPaths(parentDir, entry.name)
+	if (VISITED.has(filePath)) return VISITED.get(filePath)
 
-  const visitPromise = (async () => {
-    if (!entry.isFile()) {
-      const results = await dirResolver(filePath);
-      return results;
-    }
+	const visitPromise = (async () => {
+		if (!entry.isFile()) {
+			const results = await dirResolver(filePath)
+			return results
+		}
 
-    const { deps, files } = await getExternalDeps(filePath);
+		const { deps, files } = await getExternalDeps(filePath)
 
-    const fileName = filePath
-      .replace(REGISTRY_PATH, "")
-      .replace(/(\\\\|\\)/g, "/");
+		const fileName = filePath
+			.replace(REGISTRY_PATH, "")
+			.replace(/(\\\\|\\)/g, "/")
 
-    return {
-      deps,
-      files: isTsJsFile(filePath) ? arraysToSet(files, [fileName]) : files,
-    };
-  })();
+		return {
+			deps,
+			files: isTsJsFile(filePath) ? arraysToSet(files, [fileName]) : files,
+		}
+	})()
 
-  VISITED.set(filePath, visitPromise);
-  return visitPromise;
+	VISITED.set(filePath, visitPromise)
+	return visitPromise
 }

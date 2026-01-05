@@ -1,28 +1,28 @@
-"use client";
+"use client"
 
-import type { FInputProps } from "lpm/types/ui/Input";
-import { cn } from "lpm/utils/cn";
-import { useId } from "react";
-import Input from "./Input";
+import type { FInputProps } from "lpm/types/ui/Input"
+import { cn } from "lpm/utils/cn"
+import { useId } from "react"
+import Input from "./Input"
 
 export default function FInput({
-  label,
-  className,
-  inputClassName,
-  labelClassName,
-  ...rest
+	label,
+	className,
+	inputClassName,
+	labelClassName,
+	...rest
 }: FInputProps) {
-  const id = useId();
+	const id = useId()
 
-  return (
-    <div className={cn("relative group overflow-hidden", className)}>
-      <label
-        htmlFor={id}
-        className={cn("text-base font-medium", labelClassName)}
-      >
-        {label}
-      </label>
-      <Input id={id} {...rest} className={cn(inputClassName)} />
-    </div>
-  );
+	return (
+		<div className={cn("relative group overflow-hidden", className)}>
+			<label
+				htmlFor={id}
+				className={cn("text-base font-medium", labelClassName)}
+			>
+				{label}
+			</label>
+			<Input id={id} {...rest} className={cn(inputClassName)} />
+		</div>
+	)
 }

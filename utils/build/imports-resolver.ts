@@ -1,8 +1,8 @@
 import { Project } from "ts-morph";
 import { WORKING_DIR } from "../../utils/constants";
+import { arraysToSet } from "../../utils/lib";
 import { REGISTRY_DECORATOR } from "../static_constants";
 import { isTsJsFile, joinPaths } from "../utils";
-import { arraysToSet } from "../../utils/lib";
 
 export const VISITED = new Map<
   string,
@@ -43,7 +43,6 @@ export async function getExternalDeps(filepath: string) {
         const source = imp.getModuleSpecifierSourceFile();
 
         if (!source) continue;
-
         const resolvedPath = source.getFilePath();
         const fileLocation = getPathPatn.exec(resolvedPath)?.groups?.path;
 

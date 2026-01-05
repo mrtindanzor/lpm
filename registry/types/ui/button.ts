@@ -18,3 +18,8 @@ export type ArrowBackButtonProps = BackButtonProps & {
   wrapperClassName?: string;
   iconClassName?: string;
 };
+
+export type CloseButtonProps = {
+  close: () => void;
+} & ButtonProps &
+  ComponentProps<"button">;

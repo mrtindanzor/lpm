@@ -1,7 +1,7 @@
 import { cn } from "lpm/utils/cn";
 import type { ComponentProps } from "react";
 
-export default function Input({
+export default function Textarea({
   className,
   ...props
 }: ComponentProps<"textarea">) {
