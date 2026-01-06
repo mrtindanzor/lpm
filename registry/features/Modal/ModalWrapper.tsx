@@ -1,7 +1,7 @@
 import type {
 	ModaLWrapperProps,
 	ModaLWrapperWithButtonProps,
-} from "lpm/types/ui/modal"
+} from "lpm/types/features/modal"
 import FramerAnimatePosition from "lpm/ui/AnimatePosition"
 import { cn } from "lpm/utils/cn"
 import Modal from "./Modal"

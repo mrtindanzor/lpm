@@ -1,6 +1,6 @@
 "use client"
+import type { FullScreenBackropProps } from "lpm/types/ui/backdrop"
 import FramerAnimatePosition from "lpm/ui/AnimatePosition"
-import type { FullScreenBackropProps } from "lpm/ui/backdrop"
 import { useModal } from "lpm/ui/Modal/ModalProvider"
 import { cn } from "lpm/utils/cn"
 import { useEffect } from "react"

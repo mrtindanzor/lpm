@@ -1,4 +1,4 @@
-import type { ModalButtonProps } from "lpm/types/ui/modal"
+import type { ModalButtonProps } from "lpm/types/features/modal"
 import CloseButton from "lpm/ui/Buttons/CloseButton"
 import { cn } from "lpm/utils/cn"
 
