@@ -1,17 +1,13 @@
-"use client"
-
+import type { ModalProps } from "lpm/types/features/modal"
 import FullscreenBackdrop from "lpm/ui/FullscreenBackdrop"
 import { cn } from "lpm/utils/cn"
-import { type PropsWithChildren, useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useModal } from "./ModalProvider"
 
 const baseIndex = 3000
 
-export default function Modal({
-	children,
-	close,
-}: PropsWithChildren & { close: () => void }) {
+export default function Modal({ children, close, id }: ModalProps) {
 	const initialisedRef = useRef(false)
 	const { modalRef, totalOpenedModals, setTotalOpenedModals } = useModal()
 	const modRef = useRef(0)
@@ -65,6 +61,7 @@ export default function Modal({
 			inert={!isTopMost}
 			backdropClassName={cn(!isFirst && "bg-slate-50/5")}
 			style={{ zIndex }}
+			id={id}
 		>
 			{children}
 		</FullscreenBackdrop>,

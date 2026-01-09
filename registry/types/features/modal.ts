@@ -7,17 +7,21 @@ export type ModalContextProps = {
 	modalRef: React.RefObject<HTMLDivElement | null>
 } | null
 
-export type ModalButtonProps = {
-	className?: string
+export type ModalProps = {
+	children: React.ReactNode
+	id?: string
 	close: () => void
+}
+
+export type ModalButtonProps = Pick<ModalProps, "close"> & {
+	className?: string
 	children?: React.ReactNode
 }
 
-export type ModaLWrapperProps = ComponentProps<"div"> &
-	FramerAnimatePositionProps & {
-		close: () => void
-		children: React.ReactNode
-	}
+export type ModaLWrapperProps = Omit<ComponentProps<"div">, "style"> &
+	FramerAnimatePositionProps &
+	ModalProps
+
 export type ModaLWrapperWithButtonProps = ModaLWrapperProps & {
 	buttonProps?: Omit<ModalButtonProps, "close">
 }

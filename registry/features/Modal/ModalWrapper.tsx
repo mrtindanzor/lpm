@@ -12,14 +12,15 @@ export default function ModaLWrapper({
 	children,
 	className,
 	variants,
+	id,
 	...props
 }: ModaLWrapperProps) {
 	return (
-		<Modal close={close}>
+		<Modal id={id} close={close}>
 			<FramerAnimatePosition
 				variants={
 					variants || {
-						hidden: { y: "30%" },
+						hidden: { y: "50%" },
 					}
 				}
 				{...props}
