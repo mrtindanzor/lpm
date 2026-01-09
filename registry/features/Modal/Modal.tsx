@@ -2,7 +2,7 @@
 
 import FullscreenBackdrop from "lpm/ui/FullscreenBackdrop"
 import { cn } from "lpm/utils/cn"
-import { type PropsWithChildren, useEffect, useRef } from "react"
+import { type PropsWithChildren, useCallback, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useModal } from "./ModalProvider"
 
@@ -19,6 +19,16 @@ export default function Modal({
 	const zIndex = modRef.current
 	const isFirst = zIndex === baseIndex
 	const isTopMost = zIndex === totalOpenedModals * baseIndex
+
+	const handleEscape = useCallback(
+		(e: KeyboardEvent) => {
+			if (!isTopMost) return
+
+			const exit = e.key === "Escape"
+			if (exit) close()
+		},
+		[isTopMost, close],
+	)
 
 	useEffect(() => {
 		if (initialisedRef.current) return
@@ -38,6 +48,14 @@ export default function Modal({
 			initialisedRef.current = false
 		}
 	}, [setTotalOpenedModals])
+
+	useEffect(() => {
+		window.addEventListener("keydown", handleEscape)
+
+		return () => {
+			window.addEventListener("keydown", handleEscape)
+		}
+	}, [handleEscape])
 
 	if (!modalRef.current) return null
 

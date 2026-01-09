@@ -21,3 +21,7 @@ export type ModaLWrapperProps = ComponentProps<"div"> &
 export type ModaLWrapperWithButtonProps = ModaLWrapperProps & {
 	buttonProps?: Omit<ModalButtonProps, "close">
 }
+
+export type ModaWithThumbProps = ModaLWrapperProps & {
+	threshold?: number
+}
